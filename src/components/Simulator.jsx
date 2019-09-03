@@ -16,10 +16,10 @@ export default class Simulator extends Component {
             windowX: 0,
             windowY: 0,
             planetX: 0,
-            constant: 1 // used to fine tune acceleration and gravity ratios
+            modConstant: .01 // used to fine tune acceleration and gravity ratios
         }
         // instantiate new ship object
-        this.rocket = new Ship(constants.boosterAcceleration, constants.gravity)
+        this.rocket = new Ship(constants.boosterAcceleration, constants.gravity, this.state.modConstant, this.state.windowX, this.state.windowY)
     }
     
     getSimDimensions(){
@@ -100,7 +100,7 @@ export default class Simulator extends Component {
         this.forceUpdate()
     }
 
-    // control
+    // CONTROL
     
     
     isAccelerating = (e) => {
@@ -109,15 +109,15 @@ export default class Simulator extends Component {
         }  
     }
 
-    // begin simulation //////////////////
+    // BEGIN SIMULATION //////////////////
     begin = () => {
         console.log('starting')
         this.runSimulation()}
 
-    // simulation loop
+    // SIMULATION LOOP
     runSimulation = () => {setInterval(this.simulation,1000/this.state.tickrate)} // run simulation method at 60hz
 
-    // simulation model
+    // SIMULATION MODEL
     simulation = () => {
         this.forceUpdate()
         console.log('running...')
@@ -128,14 +128,18 @@ export default class Simulator extends Component {
         if(this.state.turningCounterClockwise){
             this.rocket.turnCounterClockwise()
         }
+        this.rocket.gravityAccelerate(this.state.windowX, this.state.windowY)
         this.rocket.accelerate()
         this.rocket.moveShip()
     }
 
+
+    // RENDERER //
     render() {
         let rocketPosition = {
             'left': `${this.rocket.x}px`,
-            'top': `${this.rocket.y}px`
+            'bottom': `${this.rocket.y}px`,
+            'transform': `rotate(${this.rocket.angle}deg)`
         }
         return (
             <SimulatorWrapper>
@@ -148,12 +152,14 @@ export default class Simulator extends Component {
                         <p>Simulator Running: {this.state.isRunning.toString()}</p>
                         <p>Orientation: {this.rocket.angle}</p>
                         <p>Accelerating: {this.rocket.accelerating.toString()}</p>
-                        <p>X: {this.rocket.x}, Y: {this.rocket.y}</p>
-                        <p>VelX: {this.rocket.velX}, VelY: {this.rocket.velY}</p>
+                        <p>X: {this.rocket.x.toFixed(1)}, Y: {this.rocket.y.toFixed(1)}</p>
+                        <p>VelX: {this.rocket.velX.toFixed(1)}, VelY: {this.rocket.velY.toFixed(1)}</p>
+                        <p>GravityX: {this.rocket.gravityX.toFixed(1)}, GravityY: {this.rocket.gravityY.toFixed(1)}</p>
+                        <p></p>
                     </Info>
                     <Planet id="planet">
-                        <button onClick={this.begin.bind(this)}>START</button>
-                        <button onClick={this.resetSimulator.bind(this)}>RESET</button>
+                        <Button onClick={this.begin.bind(this)}>START</Button>
+                        <Button onClick={this.resetSimulator.bind(this)}>RESET</Button>
                     </Planet>
                 </SimulatorWindow>
             </SimulatorWrapper>
@@ -184,7 +190,8 @@ const SimulatorWindow = styled.div`
 const Info = styled.div`
     position: absolute;
     left: 0;
-    right: 0;
+    padding: 1rem;
+    text-align: left;
     top: 0;
 `
 // planet
@@ -201,8 +208,16 @@ const Planet = styled.div`
 `
 // ship
 const Rocket = styled.div`
-    width: 5px;
-    height: 5px;
+    width: 10px;
+    border-top: 2px solid red;
+    height: 10px;
     background-color: white;
     position: absolute;
+`
+
+// control
+const Button = styled.button`
+    width: 80px;
+    padding: 10px;
+    box-sizing: border-box;
 `
