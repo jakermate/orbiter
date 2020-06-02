@@ -1,15 +1,17 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-
+import sky from '../res/sky.jpg'
 import constants from '../values/constants'
 import Ship from '../values/ship';
-
+import rocketImg from '../res/ship.svg'
+import {useSpring, animated} from 'react-spring'
+import earth from '../res/earth.png'
 export default class Simulator extends Component {
-    constructor(props){
+    constructor(props){ 
         super(props)
         this.state={
             isRunning: false,
-            tickrate: 60,
+            tickrate: 30,
             isAccelerating: false,
             turningClockwise: false,
             turningCounterClockwise: false,
@@ -100,6 +102,11 @@ export default class Simulator extends Component {
         this.forceUpdate()
     }
 
+    // log ship object
+    logShipObject = () =>{
+        console.log(this.rocket)
+    }
+
     // CONTROL
     
     
@@ -120,7 +127,6 @@ export default class Simulator extends Component {
     // SIMULATION MODEL
     simulation = () => {
         this.forceUpdate()
-        console.log('running...')
         // handle turning
         if(this.state.turningClockwise){
             this.rocket.turnClockwise()
@@ -143,10 +149,35 @@ export default class Simulator extends Component {
         }
         return (
             <SimulatorWrapper>
-                <SimulatorWindow id="sim-window">
+                <SimulatorWindow id="sim-window" style={{background:`url(${sky})`,backgroundSize:'cover', backgroundPosition:'center'}}>
                     {/* ship component */}
                     <Rocket style={rocketPosition}>
+                        <img className="img-fluid" src={rocketImg} alt=""/>
+                            {/* thrusters */}
+                            {
+                                this.state.turningClockwise &&
+                                <div id="left-thruster-top" style={{position:'absolute', width:'8px',height:'2px', background:'linear-gradient(to left, white, rgba(255,255,255,.4))',top:'4px',left:'-8px' }}></div>
 
+                            }
+                            {
+                                this.state.turningClockwise &&
+                                <div id="right-thruster-bottom" style={{position:'absolute', width:'8px',height:'2px', background:'linear-gradient(to right, white, rgba(255,255,255,.4))',bottom:'4px',right:'-10px' }}></div>
+
+                            }
+                            {
+                                this.state.turningCounterClockwise &&
+                                <div id="right-thruster-top" style={{position:'absolute', width:'8px',height:'2px', background:'linear-gradient(to right, white, rgba(255,255,255,.4))',top:'4px',right:'-8px' }}></div>
+                            }
+                             {
+                                this.state.turningCounterClockwise &&
+                                <div id="left-thruster-bottom" style={{position:'absolute', width:'8px',height:'2px', background:'linear-gradient(to left, white, rgba(255,255,255,.4))',bottom:'4px',left:'-10px' }}></div>
+                               
+                            }
+
+                            {/* engine plume */}
+                            <div id="flames" style={{width:'10px', height:'20px', background:'red', position:'absolute ', bottom:'-20px',display: this.rocket.accelerating ? 'block' : 'none'}}>
+                            </div>
+                        
                     </Rocket>
                     <Info id="info" style={{'color': 'white'}}>
                         <p>Simulator Running: {this.state.isRunning.toString()}</p>
@@ -155,12 +186,19 @@ export default class Simulator extends Component {
                         <p>X: {this.rocket.x.toFixed(1)}, Y: {this.rocket.y.toFixed(1)}</p>
                         <p>VelX: {this.rocket.velX.toFixed(1)}, VelY: {this.rocket.velY.toFixed(1)}</p>
                         <p>GravityX: {this.rocket.gravityX.toFixed(1)}, GravityY: {this.rocket.gravityY.toFixed(1)}</p>
-                        <p></p>
                     </Info>
-                    <Planet id="planet">
+                    <animated.div> 
+                    <Planet style={{background:`url(${earth})`,backgroundPosition:'center', backgroundSize:'140%', overflow:'hidden'}} id="planet">
+                        <div id="atmosphere-overlay" style={{opacity:.7,position:'absolute',top:0,bottom:0,left:0,right:0,background:`radial-gradient(circle at 25% 25%, rgba(255,255,255,.5) 0%,rgba(00,00,00,.8))`}}>
+
+                        </div>
                         <Button onClick={this.begin.bind(this)}>START</Button>
+                        <Button onClick={this.logShipObject.bind(this)}>Log</Button>
+
                         <Button onClick={this.resetSimulator.bind(this)}>RESET</Button>
                     </Planet>
+                    </animated.div>
+                    
                 </SimulatorWindow>
             </SimulatorWrapper>
         )
@@ -196,7 +234,6 @@ const Info = styled.div`
 `
 // planet
 const Planet = styled.div`
-    background: linear-gradient(-45deg, rgba(255,255,255,1),rgba(200,200,200,.8));
     width: 300px;
     display: flex;
     flex-direction: column;
@@ -209,9 +246,11 @@ const Planet = styled.div`
 // ship
 const Rocket = styled.div`
     width: 10px;
-    border-top: 2px solid red;
-    height: 10px;
-    background-color: white;
+    /* border-top: 2px solid red; */
+    height: 20px;
+    display:flex;
+    justify-content:center;
+    /* background: yellow; */
     position: absolute;
 `
 

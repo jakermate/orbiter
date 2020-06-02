@@ -20,6 +20,8 @@ export default class Ship{
     resetShip(canvasX, canvasY, planetRadius){
         this.canvasX = canvasX
         this.canvasY = canvasY
+        this.velX = 0
+        this.velY = 0 
         // set x to midway point through canvas
         this.x = canvasX/2
         // set y to midway point minus radius
