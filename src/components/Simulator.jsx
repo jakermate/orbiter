@@ -4,93 +4,97 @@ import sky from '../res/sky.jpg'
 import constants from '../values/constants'
 import Ship from '../values/ship';
 import rocketImg from '../res/ship.svg'
-import {useSpring, animated} from 'react-spring'
+import { useSpring, animated } from 'react-spring'
 import earth from '../res/earth.png'
 export default class Simulator extends Component {
-    constructor(props){ 
+    constructor(props) {
         super(props)
-        this.state={
+        this.state = {
             isRunning: false,
             tickrate: 30,
             isAccelerating: false,
             turningClockwise: false,
             turningCounterClockwise: false,
             windowX: 0,
+            thrust: 20,
             windowY: 0,
+            planetaryMass: 5.9722,
             planetX: 0,
             modConstant: .01 // used to fine tune acceleration and gravity ratios
         }
         // instantiate new ship object
         this.rocket = new Ship(constants.boosterAcceleration, constants.gravity, this.state.modConstant, this.state.windowX, this.state.windowY)
     }
-    
-    getSimDimensions(){
+    updatePlanetMass(event) {
+        this.setState(event.target.value)
+    }
+    getSimDimensions() {
         // find simulator window dimensions
         let simWindow = document.getElementById('sim-window')
         let winX = simWindow.scrollWidth
         let winY = simWindow.scrollHeight
-        this.setState({windowX: winX, windowY: winY}, ()=>console.log(`x: ${this.state.windowX}\ny: ${this.state.windowY}`))
+        this.setState({ windowX: winX, windowY: winY }, () => console.log(`x: ${this.state.windowX}\ny: ${this.state.windowY}`))
         // find planet radius
         let planetDiv = document.getElementById('planet')
         let planetRadius = planetDiv.scrollWidth / 2
-        this.setState({planetX: planetRadius},()=>console.log(`Planet radius: ${this.state.planetX}`))
+        this.setState({ planetX: planetRadius }, () => console.log(`Planet radius: ${this.state.planetX}`))
     }
 
 
     // setup of input
-    componentDidMount(){
+    componentDidMount() {
         //  initial simulator window sizes
         this.getSimDimensions()
 
 
         // resize listener
-        window.addEventListener('resize',()=>this.resetSimulator())
+        window.addEventListener('resize', () => this.resetSimulator())
 
         // key listeners
-        document.addEventListener('keydown', (e)=>{
+        document.addEventListener('keydown', (e) => {
             e.preventDefault()
-            if(e.keyCode === 32){
+            if (e.keyCode === 32) {
                 // on first engine fire, start simulation
-                if(!this.state.isRunning){
+                if (!this.state.isRunning) {
                     this.begin()
-                    this.setState({isRunning: true})
+                    this.setState({ isRunning: true })
                 }
-                this.setState({isAccelerating: true}, ()=>
-                console.log('Accelerating'))
+                this.setState({ isAccelerating: true }, () =>
+                    console.log('Accelerating'))
                 this.rocket.setAcceleration(true)
             }
             // start turning clockwise
-            if(e.keyCode === 68){
-                this.setState({turningClockwise: true}, ()=>
-                console.log("Turning clockwise..."))
+            if (e.keyCode === 68) {
+                this.setState({ turningClockwise: true }, () =>
+                    console.log("Turning clockwise..."))
             }
             // start turning counterclockwise
-            if(e.keyCode === 65){
-                this.setState({turningCounterClockwise: true}, ()=>
-                console.log("Turning counterclockwise..."))
+            if (e.keyCode === 65) {
+                this.setState({ turningCounterClockwise: true }, () =>
+                    console.log("Turning counterclockwise..."))
             }
         })
 
         // keyup to set acceleration to false
-        document.addEventListener('keyup', (e)=>{
+        document.addEventListener('keyup', (e) => {
             e.preventDefault()
-            if(e.keyCode === 32){
-                this.setState({isAccelerating: false}, ()=>
-                console.log('Stopped accelerating'))
+            if (e.keyCode === 32) {
+                this.setState({ isAccelerating: false }, () =>
+                    console.log('Stopped accelerating'))
                 this.rocket.setAcceleration(false)
             }
             // stop turning clockwise
-            if(e.keyCode === 68){
-                this.setState({turningClockwise: false}, ()=>
-                console.log("Stopped turning clockwise..."))
+            if (e.keyCode === 68) {
+                this.setState({ turningClockwise: false }, () =>
+                    console.log("Stopped turning clockwise..."))
             }
             // stop turning counterclockwise
-            if(e.keyCode === 65){
-                this.setState({turningCounterClockwise: false}, ()=>
-                console.log("Stopped turning counterclockwise..."))
+            if (e.keyCode === 65) {
+                this.setState({ turningCounterClockwise: false }, () =>
+                    console.log("Stopped turning counterclockwise..."))
             }
         })
-        
+
 
 
     }
@@ -103,35 +107,39 @@ export default class Simulator extends Component {
     }
 
     // log ship object
-    logShipObject = () =>{
+    logShipObject = () => {
         console.log(this.rocket)
     }
 
     // CONTROL
-    
-    
+    updateThrust(e){
+        console.log(e.target.value)
+        this.setState({thrust: e.target.value})
+    }
+
     isAccelerating = (e) => {
-        if(this.state.accelerating){
+        if (this.state.accelerating) {
             this.rocket.setAcceleration(this.state.isAccelerating)
-        }  
+        }
     }
 
     // BEGIN SIMULATION //////////////////
     begin = () => {
         console.log('starting')
-        this.runSimulation()}
+        this.runSimulation()
+    }
 
     // SIMULATION LOOP
-    runSimulation = () => {setInterval(this.simulation,1000/this.state.tickrate)} // run simulation method at 60hz
+    runSimulation = () => { setInterval(this.simulation, 1000 / this.state.tickrate) } // run simulation method at 60hz
 
     // SIMULATION MODEL
     simulation = () => {
         this.forceUpdate()
         // handle turning
-        if(this.state.turningClockwise){
+        if (this.state.turningClockwise) {
             this.rocket.turnClockwise()
         }
-        if(this.state.turningCounterClockwise){
+        if (this.state.turningCounterClockwise) {
             this.rocket.turnCounterClockwise()
         }
         this.rocket.gravityAccelerate(this.state.windowX, this.state.windowY)
@@ -149,37 +157,37 @@ export default class Simulator extends Component {
         }
         return (
             <SimulatorWrapper>
-                <SimulatorWindow id="sim-window" style={{background:`url(${sky})`,backgroundSize:'cover', backgroundPosition:'center'}}>
+                <SimulatorWindow id="sim-window" style={{ background: `url(${sky})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                     {/* ship component */}
                     <Rocket style={rocketPosition}>
-                        <img className="img-fluid" src={rocketImg} alt=""/>
-                            {/* thrusters */}
-                            {
-                                this.state.turningClockwise &&
-                                <div id="left-thruster-top" style={{position:'absolute', width:'8px',height:'2px', background:'linear-gradient(to left, white, rgba(255,255,255,.4))',top:'4px',left:'-8px' }}></div>
+                        <img className="img-fluid" src={rocketImg} alt="" />
+                        {/* thrusters */}
+                        {
+                            this.state.turningClockwise &&
+                            <div id="left-thruster-top" style={{ position: 'absolute', width: '8px', height: '2px', background: 'linear-gradient(to left, white, rgba(255,255,255,.4))', top: '4px', left: '-8px' }}></div>
 
-                            }
-                            {
-                                this.state.turningClockwise &&
-                                <div id="right-thruster-bottom" style={{position:'absolute', width:'8px',height:'2px', background:'linear-gradient(to right, white, rgba(255,255,255,.4))',bottom:'4px',right:'-10px' }}></div>
+                        }
+                        {
+                            this.state.turningClockwise &&
+                            <div id="right-thruster-bottom" style={{ position: 'absolute', width: '8px', height: '2px', background: 'linear-gradient(to right, white, rgba(255,255,255,.4))', bottom: '4px', right: '-10px' }}></div>
 
-                            }
-                            {
-                                this.state.turningCounterClockwise &&
-                                <div id="right-thruster-top" style={{position:'absolute', width:'8px',height:'2px', background:'linear-gradient(to right, white, rgba(255,255,255,.4))',top:'4px',right:'-8px' }}></div>
-                            }
-                             {
-                                this.state.turningCounterClockwise &&
-                                <div id="left-thruster-bottom" style={{position:'absolute', width:'8px',height:'2px', background:'linear-gradient(to left, white, rgba(255,255,255,.4))',bottom:'4px',left:'-10px' }}></div>
-                               
-                            }
+                        }
+                        {
+                            this.state.turningCounterClockwise &&
+                            <div id="right-thruster-top" style={{ position: 'absolute', width: '8px', height: '2px', background: 'linear-gradient(to right, white, rgba(255,255,255,.4))', top: '4px', right: '-8px' }}></div>
+                        }
+                        {
+                            this.state.turningCounterClockwise &&
+                            <div id="left-thruster-bottom" style={{ position: 'absolute', width: '8px', height: '2px', background: 'linear-gradient(to left, white, rgba(255,255,255,.4))', bottom: '4px', left: '-10px' }}></div>
 
-                            {/* engine plume */}
-                            <div id="flames" style={{width:'10px', height:'20px', background:'red', position:'absolute ', bottom:'-20px',display: this.rocket.accelerating ? 'block' : 'none'}}>
-                            </div>
-                        
+                        }
+
+                        {/* engine plume */}
+                        <div id="flames" style={{ width: '10px', height: '20px', background: 'red', position: 'absolute ', bottom: '-20px', display: this.rocket.accelerating ? 'block' : 'none' }}>
+                        </div>
+
                     </Rocket>
-                    <Info id="info" style={{'color': 'white'}}>
+                    <Info id="info" style={{ color: 'black', background:'white', borderRadius: '8px' }} className="mr-5">
                         <p>Simulator Running: {this.state.isRunning.toString()}</p>
                         <p>Orientation: {this.rocket.angle}</p>
                         <p>Accelerating: {this.rocket.accelerating.toString()}</p>
@@ -187,18 +195,56 @@ export default class Simulator extends Component {
                         <p>VelX: {this.rocket.velX.toFixed(1)}, VelY: {this.rocket.velY.toFixed(1)}</p>
                         <p>GravityX: {this.rocket.gravityX.toFixed(1)}, GravityY: {this.rocket.gravityY.toFixed(1)}</p>
                     </Info>
-                    <animated.div> 
-                    <Planet style={{background:`url(${earth})`,backgroundPosition:'center', backgroundSize:'140%', overflow:'hidden'}} id="planet">
-                        <div id="atmosphere-overlay" style={{opacity:.7,position:'absolute',top:0,bottom:0,left:0,right:0,background:`radial-gradient(circle at 25% 25%, rgba(255,255,255,.5) 0%,rgba(00,00,00,.8))`}}>
+                    <animated.div>
+                        <Planet style={{ background: `url(${earth})`, backgroundPosition: 'center', backgroundSize: '140%', overflow: 'hidden' }} id="planet">
+                            <div id="atmosphere-overlay" style={{ opacity: .7, position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, background: `radial-gradient(circle at 25% 25%, rgba(255,255,255,.5) 0%,rgba(00,00,00,.8))` }}>
 
-                        </div>
-                        <Button onClick={this.begin.bind(this)}>START</Button>
-                        <Button onClick={this.logShipObject.bind(this)}>Log</Button>
+                            </div>
 
-                        <Button onClick={this.resetSimulator.bind(this)}>RESET</Button>
-                    </Planet>
+                        </Planet>
                     </animated.div>
-                    
+                    <div id="controls" className="px-4 py-4 text-left ml-5" style={{
+                        position: 'absolute', bottom: 0,
+                        left: 0, background: 'white', display: 'flex', flexDirection: 'column', borderRadius: '8px'
+                    }}>
+                        <p className="lead text-center">Simulation Control</p>
+                        <div>
+
+                            <Button onClick={this.begin.bind(this)}>START</Button>
+                        </div>
+                        <div>
+
+                            <Button onClick={this.logShipObject.bind(this)}>Log</Button>
+                        </div>
+
+                        <div className="py-3">
+                            <label htmlFor="Planetary Mass" className="text-muted"><i class="fas fa-globe-americas mr-3"></i>Planetary Mass</label><br />
+                            <div>
+                                <span className="lead">{this.state.planetaryMass}</span>x10<sup>24</sup>kg
+                            </div>
+                            <input type="range" min={0} max={100} value={this.state.planetaryMass} name="Planetary Mass" id="" />
+                        </div>
+                        <hr />
+                        <div className="py-3">
+                            <label htmlFor="Spacecraft Mass" className="text-muted"><i class="fas fa-rocket mr-3"></i>Spacecraft Mass</label><br />
+                            <div>
+                                <span className="lead">{this.rocket.mass}</span>kg
+                            </div>
+                            <input type="range" min={0} max={100} value={this.rocket.mass} name="Spacecraft Mass" id="" />
+                        </div>
+                        <hr />
+                        <div className="py-3">
+                            <label htmlFor="Engine Thrust" className="text-muted"><i class="fas fa-fire mr-3"></i>Engine Thrust</label><br />
+                            <div>
+                                <span className="lead">{this.state.thrust}</span>kN
+                            </div>
+                            <input type="range" min={0} step={1} max={100} value={this.state.thrust} name="Engine Thrust" id="" onChange={e=> this.updateThrust(e)} />
+                        </div>
+                        <div>
+
+                            <Button className="btn btn-outline-secondary btn-lg w-100" onClick={this.resetSimulator.bind(this)}>RESET SHIP</Button>
+                        </div>
+                    </div>
                 </SimulatorWindow>
             </SimulatorWrapper>
         )
@@ -227,10 +273,9 @@ const SimulatorWindow = styled.div`
 `
 const Info = styled.div`
     position: absolute;
-    left: 0;
+    right: 0;
     padding: 1rem;
     text-align: left;
-    top: 0;
 `
 // planet
 const Planet = styled.div`

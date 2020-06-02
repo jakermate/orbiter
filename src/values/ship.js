@@ -1,4 +1,4 @@
-
+import constants from './constants'
 
 export default class Ship{
     constructor(accelerationConstant, gravity, modifyer, windowX, windowY){
@@ -13,6 +13,7 @@ export default class Ship{
         this.y = 0
         this.gravityX = 0
         this.gravityY = 0
+        this.mass = 20000
         this.canvasX = windowX
         this.canvasY = windowY
         console.log(this)
@@ -56,6 +57,11 @@ export default class Ship{
         this.gravityX = Math.abs(gX * this.modifyer)
         this.gravityY = Math.abs(gY * this.modifyer)
 
+    }
+    // gravity force formula
+    calculate_gravity(){
+        let force = constants.gravity * (this.mass/this.planetMass) / (Math.pow(this.distanceFromCenter, 2))
+        return force
     }
 
     // move ship using current acceleration components and gravity
