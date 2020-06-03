@@ -1,24 +1,29 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react'
+import logo from './logo.svg'
+import './App.css'
 import Simulator from './components/Simulator'
 import styled from 'styled-components'
-import { useEffect } from 'react'
 import { useSpring, animated } from 'react-spring'
+import About from './components/About'
 function App() {
   const titleSpring = useSpring({ from: { opacity: 0, transform: 'translateX(2000px)' }, to: { opacity: 1, transform: 'translateX(0px)' } })
   // fetch github
   useEffect(() => {
 
   }, [])
-
+  const [about, toggleAbout] = useState(false)
+  function handleToggleAbout(e) {
+    console.log('toggling about')
+    toggleAbout(!about)
+    return false
+  }
   return (
     <div className="App">
       <nav className="navbar navbar-dark text-light">
         <a href="/" className="navbar-brand"><i className="fas fa-globe-americas mr-3"></i>ORBITER</a>
         <ul class="navbar-nav flex-row ">
           <li class="nav-item">
-            <a class="nav-link px-2" href="#about">About</a>
+            <a class="nav-link px-2" href="#" onClick={e => handleToggleAbout(e)}>About</a>
           </li>
           <li class="nav-item">
             <a class="nav-link px-2" href="https://www.github.com/jakermate/orbiter">Github</a>
@@ -33,7 +38,14 @@ function App() {
 
         </animated.div>
       </nav>
-      <Simulator></Simulator>
+      <div className="container-fluid position-relative">
+        {
+          about &&
+          <About></About>
+        }
+        <Simulator></Simulator>
+      </div>
+
     </div>
   );
 }

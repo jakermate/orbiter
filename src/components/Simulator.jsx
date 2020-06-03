@@ -19,14 +19,18 @@ export default class Simulator extends Component {
             thrust: 20,
             windowY: 0,
             planetaryMass: 5.9722,
-            planetX: 0,
+            planetX: 150,
             modConstant: .01 // used to fine tune acceleration and gravity ratios
         }
         // instantiate new ship object
-        this.rocket = new Ship(constants.boosterAcceleration, constants.gravity, this.state.modConstant, this.state.windowX, this.state.windowY)
+        this.rocket = new Ship(constants.boosterAcceleration, constants.gravity, this.state.modConstant, this.state.windowX, this.state.windowY, this.state.planetX)
     }
+    interval
     updatePlanetMass(event) {
-        this.setState(event.target.value)
+        this.setState(event.target.value, function () {
+            // update planetMass in ship object
+            this.rocket.planetMass = this.state.planetaryMass
+        })
     }
     getSimDimensions() {
         // find simulator window dimensions
@@ -37,16 +41,18 @@ export default class Simulator extends Component {
         // find planet radius
         let planetDiv = document.getElementById('planet')
         let planetRadius = planetDiv.scrollWidth / 2
-        this.setState({ planetX: planetRadius }, () => console.log(`Planet radius: ${this.state.planetX}`))
+        this.setState({ planetX: planetRadius }, function(){
+            console.log(`Planet radius: ${this.state.planetX}`)
+            this.rocket.resetShip(winX, winY, this.state.planetX)
+            this.forceUpdate()
+        })
     }
-
-
     // setup of input
     componentDidMount() {
         //  initial simulator window sizes
         this.getSimDimensions()
 
-
+       
         // resize listener
         window.addEventListener('resize', () => this.resetSimulator())
 
@@ -65,13 +71,11 @@ export default class Simulator extends Component {
             }
             // start turning clockwise
             if (e.keyCode === 68) {
-                this.setState({ turningClockwise: true }, () =>
-                    console.log("Turning clockwise..."))
+                this.setState({ turningClockwise: true })
             }
             // start turning counterclockwise
             if (e.keyCode === 65) {
-                this.setState({ turningCounterClockwise: true }, () =>
-                    console.log("Turning counterclockwise..."))
+                this.setState({ turningCounterClockwise: true })
             }
         })
 
@@ -101,8 +105,9 @@ export default class Simulator extends Component {
 
     resetSimulator = () => {
         this.getSimDimensions()
+        this.setState({isRunning: false})
         // set ship starting point
-        this.rocket.resetShip(this.state.windowX, this.state.windowY, this.state.planetX)
+        this.rocket.resetShip(this.state.windowX, this.state.windowY, this.state.planetX, this.interval)
         this.forceUpdate()
     }
 
@@ -112,9 +117,9 @@ export default class Simulator extends Component {
     }
 
     // CONTROL
-    updateThrust(e){
+    updateThrust(e) {
         console.log(e.target.value)
-        this.setState({thrust: e.target.value})
+        this.setState({ thrust: e.target.value })
     }
 
     isAccelerating = (e) => {
@@ -130,7 +135,9 @@ export default class Simulator extends Component {
     }
 
     // SIMULATION LOOP
-    runSimulation = () => { setInterval(this.simulation, 1000 / this.state.tickrate) } // run simulation method at 60hz
+    runSimulation = () => { 
+        this.interval = setInterval(this.simulation, 1000 / this.state.tickrate) 
+    } // run simulation method at 60hz
 
     // SIMULATION MODEL
     simulation = () => {
@@ -145,6 +152,7 @@ export default class Simulator extends Component {
         this.rocket.gravityAccelerate(this.state.windowX, this.state.windowY)
         this.rocket.accelerate()
         this.rocket.moveShip()
+        this.rocket.detectCollision()
     }
 
 
@@ -187,13 +195,28 @@ export default class Simulator extends Component {
                         </div>
 
                     </Rocket>
-                    <Info id="info" style={{ color: 'black', background:'white', borderRadius: '8px' }} className="mr-5">
-                        <p>Simulator Running: {this.state.isRunning.toString()}</p>
-                        <p>Orientation: {this.rocket.angle}</p>
-                        <p>Accelerating: {this.rocket.accelerating.toString()}</p>
-                        <p>X: {this.rocket.x.toFixed(1)}, Y: {this.rocket.y.toFixed(1)}</p>
-                        <p>VelX: {this.rocket.velX.toFixed(1)}, VelY: {this.rocket.velY.toFixed(1)}</p>
-                        <p>GravityX: {this.rocket.gravityX.toFixed(1)}, GravityY: {this.rocket.gravityY.toFixed(1)}</p>
+                    <Info>
+
+                        <div id="info" style={{ color: 'black', background: 'white', borderRadius: '8px' }} className=" text-left mr-5 px-4 py-4">
+                            <p className="lead">Computation</p>
+                            <p>Simulator Running: {this.state.isRunning.toString()}</p>
+                            <p>Orientation: {this.rocket.angle}</p>
+                            <p>Accelerating: {this.rocket.accelerating.toString()}</p>
+                            <p>X: {this.rocket.x.toFixed(1)}, Y: {this.rocket.y.toFixed(1)}</p>
+                            <p>Velocity: {this.rocket.Vel.toFixed(1)*10} m/s</p>
+                            <p>VelX: {this.rocket.velX.toFixed(1)}, VelY: {this.rocket.velY.toFixed(1)}</p>
+                            <p>Gravitational Force: {this.rocket.gravitationalForce.toFixed(2)} m/s^2</p>
+                            <p>GravityX: {this.rocket.gravityX.toFixed(2)}, GravityY: {this.rocket.gravityY.toFixed(2)}</p>
+
+                        </div>
+                        <div className="mr-5 mt-3 px-4 py-4" style={{ background: 'white', borderRadius: '8px', }} >
+                            <p className="lead">Keyboard Control</p>
+                            <button className={`btn btn-lg w-50 btn-outline-secondary mb-3 ${this.state.turningCounterClockwise ? 'active' : ''}`}>A<br></br><i class="fas fa-chevron-left"></i></button>
+                            <button className={`btn btn-lg w-50 btn-outline-secondary mb-3 ${this.state.turningClockwise ? 'active' : ''}`}>S<br></br><i class="fas fa-chevron-right"></i></button>
+                            <button className={`btn btn-lg w-100 btn-outline-secondary ${this.rocket.accelerating ? 'active' : ''}`}>Space<br></br><i class="fas fa-fire"></i></button>
+
+                        </div>
+
                     </Info>
                     <animated.div>
                         <Planet style={{ background: `url(${earth})`, backgroundPosition: 'center', backgroundSize: '140%', overflow: 'hidden' }} id="planet">
@@ -208,12 +231,8 @@ export default class Simulator extends Component {
                         left: 0, background: 'white', display: 'flex', flexDirection: 'column', borderRadius: '8px'
                     }}>
                         <p className="lead text-center">Simulation Control</p>
+                   
                         <div>
-
-                            <Button onClick={this.begin.bind(this)}>START</Button>
-                        </div>
-                        <div>
-
                             <Button onClick={this.logShipObject.bind(this)}>Log</Button>
                         </div>
 
@@ -238,7 +257,7 @@ export default class Simulator extends Component {
                             <div>
                                 <span className="lead">{this.state.thrust}</span>kN
                             </div>
-                            <input type="range" min={0} step={1} max={100} value={this.state.thrust} name="Engine Thrust" id="" onChange={e=> this.updateThrust(e)} />
+                            <input type="range" min={0} step={1} max={100} value={this.state.thrust} name="Engine Thrust" id="" onChange={e => this.updateThrust(e)} />
                         </div>
                         <div>
 
@@ -274,8 +293,6 @@ const SimulatorWindow = styled.div`
 const Info = styled.div`
     position: absolute;
     right: 0;
-    padding: 1rem;
-    text-align: left;
 `
 // planet
 const Planet = styled.div`

@@ -1,4 +1,4 @@
 export default {
-    gravity: 9.8,
-    boosterAcceleration: 20
+    gravity: 6.674, 
+    boosterAcceleration: 600
 }
