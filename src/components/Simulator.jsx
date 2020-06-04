@@ -6,6 +6,9 @@ import Ship from '../values/ship';
 import rocketImg from '../res/ship.svg'
 import { useSpring, animated } from 'react-spring'
 import earth from '../res/earth.png'
+const clipPath = {
+    clipPath: 'polygon(0 0, 100% 0, 50% 100%)'
+}
 export default class Simulator extends Component {
     constructor(props) {
         super(props)
@@ -16,10 +19,13 @@ export default class Simulator extends Component {
             turningClockwise: false,
             turningCounterClockwise: false,
             windowX: 0,
-            thrust: 20,
+            thrust: 60,
             windowY: 0,
             planetaryMass: 5.9722,
             planetX: 150,
+            grade: 0,
+            controlsActive: true,
+            computationsActive: true,
             modConstant: .01 // used to fine tune acceleration and gravity ratios
         }
         // instantiate new ship object
@@ -36,12 +42,12 @@ export default class Simulator extends Component {
         // find simulator window dimensions
         let simWindow = document.getElementById('sim-window')
         let winX = simWindow.scrollWidth
-        let winY = simWindow.scrollHeight
+        let winY = simWindow.clientHeight
         this.setState({ windowX: winX, windowY: winY }, () => console.log(`x: ${this.state.windowX}\ny: ${this.state.windowY}`))
         // find planet radius
         let planetDiv = document.getElementById('planet')
         let planetRadius = planetDiv.scrollWidth / 2
-        this.setState({ planetX: planetRadius }, function(){
+        this.setState({ planetX: planetRadius }, function () {
             console.log(`Planet radius: ${this.state.planetX}`)
             this.rocket.resetShip(winX, winY, this.state.planetX)
             this.forceUpdate()
@@ -52,7 +58,6 @@ export default class Simulator extends Component {
         //  initial simulator window sizes
         this.getSimDimensions()
 
-       
         // resize listener
         window.addEventListener('resize', () => this.resetSimulator())
 
@@ -105,21 +110,38 @@ export default class Simulator extends Component {
 
     resetSimulator = () => {
         this.getSimDimensions()
-        this.setState({isRunning: false})
+        this.setState({ isRunning: false })
         // set ship starting point
         this.rocket.resetShip(this.state.windowX, this.state.windowY, this.state.planetX, this.interval)
         this.forceUpdate()
     }
+    revertDefaultSettings() {
 
+    }
     // log ship object
     logShipObject = () => {
         console.log(this.rocket)
     }
 
     // CONTROL
+    toggleControls(){
+        this.setState({controlsActive: !this.state.controlsActive})
+    }
+    toggleComputations(){
+        this.setState({computationsActive: !this.state.computationsActive})
+    }
     updateThrust(e) {
         console.log(e.target.value)
-        this.setState({ thrust: e.target.value })
+        this.setState({ thrust: e.target.value }, () => {
+            this.rocket.set_thrust(this.state.thrust)
+            console.log(this.state.thrust)
+        })
+    }
+    updatePlanetaryMass(e) {
+        this.setState({ planetaryMass: e.target.value }, () => {
+            this.rocket.set_planetMass(this.state.planetaryMass)
+            console.log(this.rocket.planetMass)
+        })
     }
 
     isAccelerating = (e) => {
@@ -135,8 +157,8 @@ export default class Simulator extends Component {
     }
 
     // SIMULATION LOOP
-    runSimulation = () => { 
-        this.interval = setInterval(this.simulation, 1000 / this.state.tickrate) 
+    runSimulation = () => {
+        this.interval = setInterval(this.simulation, 1000 / this.state.tickrate)
     } // run simulation method at 60hz
 
     // SIMULATION MODEL
@@ -165,7 +187,7 @@ export default class Simulator extends Component {
         }
         return (
             <SimulatorWrapper>
-                <SimulatorWindow id="sim-window" style={{ background: `url(${sky})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                <SimulatorWindow id="sim-window" style={{ background: `url(${sky})`, backgroundSize: 'cover', backgroundPosition: 'center',boxSizing:'border-box',overflowX:'hidden' }}>
                     {/* ship component */}
                     <Rocket style={rocketPosition}>
                         <img className="img-fluid" src={rocketImg} alt="" />
@@ -191,23 +213,48 @@ export default class Simulator extends Component {
                         }
 
                         {/* engine plume */}
-                        <div id="flames" style={{ width: '10px', height: '20px', background: 'red', position: 'absolute ', bottom: '-20px', display: this.rocket.accelerating ? 'block' : 'none' }}>
+                        <div id="flames" className="flames" style={{ width: '10px', height: `${this.state.thrust / 3}px`, background: 'red', position: 'absolute ', bottom: `${-this.state.thrust / 3}px`, display: this.rocket.accelerating ? 'block' : 'none', ...clipPath }}>
                         </div>
 
                     </Rocket>
-                    <Info>
+                    <Info className="transform-transition" style={{transform: this.state.computationsActive ? `translateX(0)` : `translateX(1000px)`,}}>
 
                         <div id="info" style={{ color: 'black', background: 'white', borderRadius: '8px' }} className=" text-left mr-5 px-4 py-4">
-                            <p className="lead">Computation</p>
-                            <p>Simulator Running: {this.state.isRunning.toString()}</p>
-                            <p>Orientation: {this.rocket.angle}</p>
-                            <p>Accelerating: {this.rocket.accelerating.toString()}</p>
-                            <p>X: {this.rocket.x.toFixed(1)}, Y: {this.rocket.y.toFixed(1)}</p>
-                            <p>Velocity: {this.rocket.Vel.toFixed(1)*10} m/s</p>
-                            <p>VelX: {this.rocket.velX.toFixed(1)}, VelY: {this.rocket.velY.toFixed(1)}</p>
-                            <p>Gravitational Force: {this.rocket.gravitationalForce.toFixed(2)} m/s^2</p>
-                            <p>GravityX: {this.rocket.gravityX.toFixed(2)}, GravityY: {this.rocket.gravityY.toFixed(2)}</p>
+                            <h4 className="text-center">Computations</h4>
+                            <div className="container py-3">
+                            <div>
+                                <p>Simulator {this.state.isRunning ? 'Running' : 'Stalled'}</p>
+                                <p className="text-muted">Simulator Status</p>
+                            </div>
+                            <div>
+                                {this.rocket.angle} deg
+                            <p className="text-muted">Orientation</p>
 
+                            </div>
+                            <div>
+                                {(this.rocket.radius - 150).toFixed(0)} km
+                            <p className="text-muted">Altitude </p>
+
+                            </div>
+                            <div>
+                                {
+                                    this.rocket.accelerating ? 'Accelerating' : 'Static'
+                                }
+                                <p className="text-muted">Ship Status </p>
+
+                            </div>
+                            <p>X: {this.rocket.x.toFixed(1)}, Y: {this.rocket.y.toFixed(1)}</p>
+                            <p>Velocity: {this.rocket.Vel.toFixed(1) * 10} km/s</p>
+                            <p>VelX: {this.rocket.velX.toFixed(1)}, VelY: {this.rocket.velY.toFixed(1)}</p>
+                            <p>Gravitational Force: {this.rocket.gravitationalForce.toFixed(2)} N</p>
+                            <p>GravityX: {this.rocket.gravityX.toFixed(2)}, GravityY: {this.rocket.gravityY.toFixed(2)}</p>
+                            
+                            <div>
+                            {/* grades how round/non-eccentric the orbit is */}
+                            <p>Eccentricity Grade: {this.state.grade}</p>
+                            </div>
+                            </div>
+                           
                         </div>
                         <div className="mr-5 mt-3 px-4 py-4" style={{ background: 'white', borderRadius: '8px', }} >
                             <p className="lead">Keyboard Control</p>
@@ -218,7 +265,7 @@ export default class Simulator extends Component {
                         </div>
 
                     </Info>
-                    <animated.div>
+                    <animated.div >
                         <Planet style={{ background: `url(${earth})`, backgroundPosition: 'center', backgroundSize: '140%', overflow: 'hidden' }} id="planet">
                             <div id="atmosphere-overlay" style={{ opacity: .7, position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, background: `radial-gradient(circle at 25% 25%, rgba(255,255,255,.5) 0%,rgba(00,00,00,.8))` }}>
 
@@ -226,45 +273,83 @@ export default class Simulator extends Component {
 
                         </Planet>
                     </animated.div>
-                    <div id="controls" className="px-4 py-4 text-left ml-5" style={{
-                        position: 'absolute', bottom: 0,
+                    <div id="controls" className="px-4 py-4 text-left ml-5 transform-transition" style={{
+                        position: 'absolute',
+                        transform: this.state.controlsActive ? `translateX(0)` : `translateX(-1000px)`,
                         left: 0, background: 'white', display: 'flex', flexDirection: 'column', borderRadius: '8px'
                     }}>
-                        <p className="lead text-center">Simulation Control</p>
-                   
-                        <div>
-                            <Button onClick={this.logShipObject.bind(this)}>Log</Button>
-                        </div>
+                        <h4 className=" text-center">Simulation Control</h4>
 
-                        <div className="py-3">
-                            <label htmlFor="Planetary Mass" className="text-muted"><i class="fas fa-globe-americas mr-3"></i>Planetary Mass</label><br />
-                            <div>
-                                <span className="lead">{this.state.planetaryMass}</span>x10<sup>24</sup>kg
+
+
+                        <div className="py-3 d-flex flex-row container">
+                            <div className="row">
+                                <div className="p-2 col-3">
+                                    <i class="fas fa-globe-americas mr-3 fa-4x text-secondary" style={{opacity:'.3'}}></i>
+                                </div>
+                                <div className="col-9">
+                                    <label htmlFor="Planetary Mass" className="text-muted">Planetary Mass</label><br />
+                                    <div>
+                                        <span className="lead">{this.state.planetaryMass}</span>x10<sup>24</sup>kg
+                                </div>
+                                    <input type="range" className="w-100 slider-style" min={.1} max={10} step={.1} onChange={e => this.updatePlanetaryMass(e)} value={this.state.planetaryMass} name="Planetary Mass" id="" />
+                                </div>
                             </div>
-                            <input type="range" min={0} max={100} value={this.state.planetaryMass} name="Planetary Mass" id="" />
+
+
                         </div>
                         <hr />
-                        <div className="py-3">
-                            <label htmlFor="Spacecraft Mass" className="text-muted"><i class="fas fa-rocket mr-3"></i>Spacecraft Mass</label><br />
-                            <div>
-                                <span className="lead">{this.rocket.mass}</span>kg
+                        <div className="py-3 d-flex flex-row container">
+
+                            <div className="row">
+                                <div className="p-2 col-3">
+                                    <i class="fas fa-rocket mr-3 fa-4x text-secondary" style={{opacity:'.3'}}></i>
+                                </div>
+                                <div className="col-9">
+                                    <label htmlFor="Spacecraft Mass" className="text-muted">Spacecraft Mass</label><br />
+                                    <div>
+                                        <span className="lead">{this.rocket.mass}</span>kg
+                                        </div>
+                                    <input type="range" className="w-100 slider-style" min={0} max={100} value={this.rocket.mass} name="Spacecraft Mass" id="" />
+                                </div>
                             </div>
-                            <input type="range" min={0} max={100} value={this.rocket.mass} name="Spacecraft Mass" id="" />
+
                         </div>
                         <hr />
-                        <div className="py-3">
-                            <label htmlFor="Engine Thrust" className="text-muted"><i class="fas fa-fire mr-3"></i>Engine Thrust</label><br />
-                            <div>
-                                <span className="lead">{this.state.thrust}</span>kN
+                        <div className="py-3 d-flex flex-row container">
+                            <div className="row">
+                                <div className="p-2 col-3">
+                                    <i class="fas fa-fire mr-3 fa-4x text-secondary" style={{opacity:'.3'}}></i>
+                                </div>
+                                <div className=" col-9">
+                                    <label htmlFor="Engine Thrust" className="text-muted">Engine Thrust</label><br />
+                                    <div>
+                                        <span className="lead">{this.state.thrust}</span>kN
+                                </div>
+                                    <input type="range" className="w-100 slider-style" min={0} step={1} max={100} value={this.state.thrust} name="Engine Thrust" id="" onChange={e => this.updateThrust(e)} />
+                                </div>
                             </div>
-                            <input type="range" min={0} step={1} max={100} value={this.state.thrust} name="Engine Thrust" id="" onChange={e => this.updateThrust(e)} />
-                        </div>
-                        <div>
 
-                            <Button className="btn btn-outline-secondary btn-lg w-100" onClick={this.resetSimulator.bind(this)}>RESET SHIP</Button>
+
+                        </div>
+                        <div className="mt-3">
+                            <Button className="btn btn-outline-secondary btn-lg w-100 mb-3 "  onClick={this.revertDefaultSettings.bind(this)}>DEFAULT SETTINGS</Button>
+
+                            <Button className="btn btn-outline-secondary btn-lg w-100 " onClick={this.resetSimulator.bind(this)}>RESET SHIP</Button>
                         </div>
                     </div>
                 </SimulatorWindow>
+                <div id="toggles">
+                    <div className="btn-group">
+                    <button className={`btn btn-secondary btn-custom ${this.state.controlsActive ? 'active' : ''}`} onClick={e=>this.toggleControls()}>
+                        Controls
+                    </button>
+                    <button className={`btn btn-secondary btn-custom ${this.state.computationsActive ? 'active' : ''}`} onClick={e=>this.toggleComputations()}>
+                        Computations
+                    </button>
+                    </div>
+                   
+                </div>
             </SimulatorWrapper>
         )
     }
@@ -287,7 +372,6 @@ const SimulatorWindow = styled.div`
     min-height: 80vh;
     overflow: visible;
     background-color: black;
-    padding: 50px;
     position: relative;
 `
 const Info = styled.div`
@@ -303,7 +387,13 @@ const Planet = styled.div`
     height: 300px;
     position: relative;
     border-radius: 100%;
-
+    /* &::before{
+        content:'sd';
+        background: red;
+        position:absolute;
+        height:100%;
+        width:100%;
+    } */
 `
 // ship
 const Rocket = styled.div`

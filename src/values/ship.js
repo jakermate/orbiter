@@ -3,19 +3,20 @@ import constants from './constants'
 export default class Ship{
     interval
     constructor(accelerationConstant, gravity, modifyer, windowX, windowY, radius){
-        this.accelerationConstant = accelerationConstant
+        this.thrust = accelerationConstant
         this.gravity = gravity
         this.modifyer = modifyer
         this.angle = 0
         this.accelerating = false
         this.velX = 0
+        this.velY = 0
         this.Vel = 0
         this.gravitationalForce = 0
-        this.velY = 0
         this.canvasX = windowX
         this.canvasY = windowY
         this.x = this.canvasX / 2
         this.y = this.canvasY / 2 + radius
+        this.radius = 150
         this.gravityX = 0
         this.gravityY = 0
         this.mass = 20000
@@ -46,8 +47,8 @@ export default class Ship{
         if(this.accelerating){
                 // determine x and y components of angular vector
                 // must convert from degrees to radians
-                this.velX += (this.accelerationConstant * Math.sin(this.angle*(Math.PI/180)))*this.modifyer 
-                this.velY += (this.accelerationConstant * Math.cos(this.angle*(Math.PI/180)))*this.modifyer
+                this.velX += (this.thrust * Math.sin(this.angle*(Math.PI/180)))*this.modifyer 
+                this.velY += (this.thrust * Math.cos(this.angle*(Math.PI/180)))*this.modifyer
                 // console.log(Math.sin(this.angle))
             
         }
@@ -71,8 +72,8 @@ export default class Ship{
     // gravity force formula
     calculate_gravity(dX, dY){
         let radius2 = Math.pow(dX,2) + Math.pow(dY,2)
-        let radius = Math.sqrt(radius2) 
-        let force = (constants.gravity ) * (this.mass/(this.planetMass * 1000)) / (Math.pow(radius, 2)) * 500000
+        let radius = Math.sqrt(radius2)  
+        let force = (constants.gravity ) * ((this.mass/40000)*(this.planetMass)) / (Math.pow(radius, 2)) * 500000
         return force
     }
     // break down gravitational force into x and y components
@@ -89,6 +90,7 @@ export default class Ship{
         let b = this.y - (this.canvasY / 2)
         let c2 = Math.pow(a,2) + Math.pow(b,2)
         let c = Math.sqrt(c2).toFixed(2)
+    
         return c
     }
     // move ship using current acceleration components and gravity
@@ -140,10 +142,17 @@ export default class Ship{
         let dy = Math.abs(this.y - (this.canvasY / 2))
         let c2 = Math.pow(dx,2) + Math.pow(dy,2)
         let c = Math.sqrt(c2)
+        this.radius = c
         if(c < 145){
             console.log('Collision!')
             this.collision = true
         }
     }
 
+    set_thrust(thrust){
+        this.thrust = thrust * 10
+    }
+    set_planetMass(mass){
+        this.planetMass = mass
+    }
 }
