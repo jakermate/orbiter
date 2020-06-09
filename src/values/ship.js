@@ -37,6 +37,7 @@ export default class Ship{
         // set y to midway point minus radius
         this.y = (canvasY/2)+planetRadius
         this.angle = 0
+        this.collision = false
     }
     // set boolean for changing velocity or not
     setAcceleration(isAccelerating){
@@ -143,10 +144,12 @@ export default class Ship{
         let c2 = Math.pow(dx,2) + Math.pow(dy,2)
         let c = Math.sqrt(c2)
         this.radius = c
-        if(c < 145){
+        if(c < 149){
             console.log('Collision!')
             this.collision = true
+            return true
         }
+        return false
     }
 
     set_thrust(thrust){
