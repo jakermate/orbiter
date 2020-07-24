@@ -10,6 +10,7 @@
     "react-spring": "^8.0.27",
     "styled-components": "^4.3.2"
   },
+  "homepage":"/orbiter",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
