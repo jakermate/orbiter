@@ -308,10 +308,6 @@ export default class Simulator extends Component {
                                 <p>Gravitational Force: {this.rocket.gravitationalForce.toFixed(2)} N</p>
                                 <p>GravityX: {this.rocket.gravityX.toFixed(2)}, GravityY: {this.rocket.gravityY.toFixed(2)}</p>
 
-                                <div>
-                                    {/* grades how round/non-eccentric the orbit is */}
-                                    <p>Eccentricity Grade: {this.state.grade}</p>
-                                </div>
                             </div>
 
                         </div>
@@ -335,24 +331,24 @@ export default class Simulator extends Component {
                     </animated.div>
                     <div id="controls" className="px-4 py-4 text-left ml-5 transform-transition" style={{
                         position: 'absolute',
-                        background: '#ffffff',
+                        background: '#000000',
                         transform: this.state.controlsActive ? `translateX(0)` : `translateX(-1000px)`,
                         left: 0, display: 'flex', flexDirection: 'column', borderRadius: '8px'
                     }}>
-                        <p className=" lead text-center">Simulation Control</p>
+                        <p className=" lead text-center text-white" style={{letterSpacing:'4px'}}>SIMULATION CONTROL</p>
 
 
 
                         <div className="py-3 d-flex flex-row container">
                             <div className="row">
                                 <div className="p-2 col-3">
-                                    <i class="fas fa-globe-americas mr-3 fa-4x text-secondary" style={{ opacity: '.3' }}></i>
+                                    <i class="fas fa-globe-americas mr-3 fa-4x text-light" style={{ opacity: '1' }}></i>
                                 </div>
                                 <div className="col-9">
                                     <div>
-                                        <span className="lead font-weight-bold text-secondary" style={{ fontSize: '2rem' }}>{this.state.planetaryMass} x10<sup>24</sup>kg</span>
+                                        <span className="lead font-weight-bold text-secondary" style={{ fontSize: '20px' }}>{this.state.planetaryMass} x10<sup>24</sup>kg</span>
                                     </div>
-                                    <label htmlFor="Planetary Mass" className="text-muted">Planetary Mass</label><br />
+                                    <label htmlFor="Planetary Mass" className="text-light">Planetary Mass</label><br />
                                     <input type="range" className="w-100 slider-style" min={.1} max={10} step={.1} onChange={e => this.updatePlanetaryMass(e)} value={this.state.planetaryMass} name="Planetary Mass" id="" />
                                 </div>
                             </div>
@@ -364,13 +360,13 @@ export default class Simulator extends Component {
 
                             <div className="row">
                                 <div className="p-2 col-3">
-                                    <i class="fas fa-rocket mr-3 fa-4x text-secondary" style={{ opacity: '.3' }}></i>
+                                    <i class="fas fa-rocket mr-3 fa-4x text-light" style={{ opacity: '1' }}></i>
                                 </div>
                                 <div className="col-9">
                                     <div>
-                                        <span className="font-weight-bold text-secondary" style={{ fontSize: '2rem' }}>{this.rocket.mass} kg</span>
+                                        <span className="font-weight-bold text-secondary" style={{ fontSize: '20px' }}>{this.rocket.mass} kg</span>
                                     </div>
-                                    <label htmlFor="Spacecraft Mass" className="text-muted">Spacecraft Mass</label><br />
+                                    <label htmlFor="Spacecraft Mass" className="text-light">Spacecraft Mass</label><br />
                                     <input type="range" className="w-100 slider-style" min={0} max={100} value={this.rocket.mass} name="Spacecraft Mass" id="" />
                                 </div>
                             </div>
@@ -380,13 +376,13 @@ export default class Simulator extends Component {
                         <div className="py-3 d-flex flex-row container">
                             <div className="row">
                                 <div className="p-2 col-3">
-                                    <i class="fas fa-fire mr-3 fa-4x text-secondary" style={{ opacity: '.3' }}></i>
+                                    <i class="fas fa-fire mr-3 fa-4x text-light" style={{ opacity: '1' }}></i>
                                 </div>
                                 <div className=" col-9">
                                     <div>
-                                        <span className="font-weight-bold text-secondary" style={{ fontSize: '2rem' }}>{this.state.thrust} kN</span>
+                                        <span className="font-weight-bold text-secondary" style={{ fontSize: '20px' }}>{this.state.thrust} kN</span>
                                     </div>
-                                    <label htmlFor="Engine Thrust" className="text-muted">Engine Thrust</label><br />
+                                    <label htmlFor="Engine Thrust" className="text-light">Engine Thrust</label><br />
                                     <input type="range" className="w-100 slider-style" min={1} step={1} max={100} value={this.state.thrust} name="Engine Thrust" id="" onChange={e => this.updateThrust(e)} />
                                 </div>
                             </div>
