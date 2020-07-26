@@ -23,6 +23,7 @@ export default class Simulator extends Component {
             thrust: 60,
             windowY: 0,
             planetaryMass: 5.9722,
+            spaceshipMass: 20000,
             planetX: 150,
             grade: 0,
             controlsActive: true,
@@ -144,6 +145,12 @@ export default class Simulator extends Component {
             console.log(this.rocket.planetMass)
         })
     }
+    updateSpaceshipMass(e) {
+        this.setState({ spaceshipMass: e.target.value }, () => {
+            this.rocket.set_mass(this.state.spaceshipMass)
+            console.log(this.rocket.mass)
+        })
+    }
 
     isAccelerating = (e) => {
         if (this.state.accelerating) {
@@ -232,7 +239,7 @@ export default class Simulator extends Component {
                 <SimulatorWindow id="sim-window" style={{ background: `url(${sky})`, minHeight: '100vh', maxHeight: '100vhd       ', backgroundSize: 'cover', backgroundPosition: 'center', boxSizing: 'border-box', overflowX: 'hidden', overflowY: 'hidden' }}>
                     {/* ship component */}
                     <Rocket style={{ ...rocketPosition }}>
-                        <img className="img-fluid" src={rocketImg} alt="" />
+                        <img className="img-fluid" src={rocketImg} alt="" style={{zIndex: 999}} />
                         {/* thrusters */}
                         {
                             this.state.turningClockwise &&
@@ -332,6 +339,7 @@ export default class Simulator extends Component {
                     <div id="controls" className="px-4 py-4 text-left ml-5 transform-transition" style={{
                         position: 'absolute',
                         background: '#000000',
+                        border: '1px solid #ffffff88',
                         transform: this.state.controlsActive ? `translateX(0)` : `translateX(-1000px)`,
                         left: 0, display: 'flex', flexDirection: 'column', borderRadius: '8px'
                     }}>
@@ -351,7 +359,7 @@ export default class Simulator extends Component {
                                     <label htmlFor="Planetary Mass" className="text-light">Planetary Mass</label><br />
                                     <input type="range" className="w-100 slider-style" min={.1} max={10} step={.1} onChange={e => this.updatePlanetaryMass(e)} value={this.state.planetaryMass} name="Planetary Mass" id="" />
                                 </div>
-                            </div>
+                            </div>``
 
 
                         </div>
@@ -367,7 +375,7 @@ export default class Simulator extends Component {
                                         <span className="font-weight-bold text-secondary" style={{ fontSize: '20px' }}>{this.rocket.mass} kg</span>
                                     </div>
                                     <label htmlFor="Spacecraft Mass" className="text-light">Spacecraft Mass</label><br />
-                                    <input type="range" className="w-100 slider-style" min={0} max={100} value={this.rocket.mass} name="Spacecraft Mass" id="" />
+                                    <input type="range" className="w-100 slider-style" min={1000} max={20000} step={1000} value={this.rocket.mass} onChange={e => this.updateSpaceshipMass(e)} name="Spacecraft Mass" id="" />
                                 </div>
                             </div>
 

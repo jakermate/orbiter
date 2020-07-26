@@ -19,7 +19,7 @@ export default class Ship{
         this.radius = 150
         this.gravityX = 0
         this.gravityY = 0
-        this.mass = 20000
+        this.mass = 10000
         this.planetMass = 5.9722
         this.collision = false
         console.log(this)
@@ -48,8 +48,8 @@ export default class Ship{
         if(this.accelerating){
                 // determine x and y components of angular vector
                 // must convert from degrees to radians
-                this.velX += (this.thrust * Math.sin(this.angle*(Math.PI/180)))*this.modifyer 
-                this.velY += (this.thrust * Math.cos(this.angle*(Math.PI/180)))*this.modifyer
+                this.velX += (this.thrust * Math.sin(this.angle*(Math.PI/180)))*this.modifyer  * 10000  / this.mass
+                this.velY += (this.thrust * Math.cos(this.angle*(Math.PI/180)))*this.modifyer  * 10000 / this.mass
                 // console.log(Math.sin(this.angle))
             
         }
@@ -157,5 +157,8 @@ export default class Ship{
     }
     set_planetMass(mass){
         this.planetMass = mass
+    }
+    set_mass(mass){
+        this.mass = mass
     }
 }
