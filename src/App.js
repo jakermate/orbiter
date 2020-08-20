@@ -1,16 +1,28 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import logo from './logo.svg'
 import './App.css'
 import Simulator from './components/Simulator'
 import styled from 'styled-components'
 import { useSpring, animated } from 'react-spring'
+import NotWideEnough from './NotWideEnough'
 import About from './components/About'
 function App() {
   const titleSpring = useSpring({ from: { opacity: 0, transform: 'translateX(2000px)' }, to: { opacity: 1, transform: 'translateX(0px)' } })
-  // fetch github
-  useEffect(() => {
+  const [width, setWidth] = useState(999)
 
-  }, [])
+  const onResize = useCallback(event => {
+    setWidth(window.innerWidth)
+  },[])
+  useEffect(() => {
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+    }
+  },[onResize])
+  useEffect(()=>{
+    console.log('width changed')
+  },[width])
+  
   const [about, toggleAbout] = useState(false)
   function handleToggleAbout(e) {
     console.log('toggling about')
@@ -19,7 +31,12 @@ function App() {
   }
   return (
     <div className="App">
-      <nav className="navbar navbar-dark text-light">
+      {
+          window.innerWidth < 1000 &&
+          <NotWideEnough width={width}></NotWideEnough>
+
+        }
+      <nav className="navbar navbar-dark text-light" style={{background:'#222'}}>
         <a href="/" className="navbar-brand"><i className="fas fa-globe-americas mr-3"></i>ORBITER</a>
         <ul class="navbar-nav flex-row ">
           <li class="nav-item">
@@ -43,6 +60,7 @@ function App() {
           about &&
           <About></About>
         }
+        
         <Simulator></Simulator>
       </div>
 
